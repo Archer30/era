@@ -303,6 +303,21 @@ begin
   result := ord(Trans.SetLanguage(NewLanguage));
 end;
 
+function GetLanguage: {O} pchar; stdcall;
+begin
+  result := Externalize(Trans.GetLanguage);
+end;
+
+function SetCodePage (NewCodePage: cardinal): TInt32Bool; stdcall;
+begin
+  result := ord(Trans.SetCodePage(NewCodePage));
+end;
+
+function GetCodePage: cardinal; stdcall;
+begin
+  result := cardinal(Trans.GetCodePage);
+end;
+
 function LoadImageAsPcx16 (FilePath, PcxName: pchar; Width, Height, MaxWidth, MaxHeight, ResizeAlg: integer): {OU} Heroes.PPcx16Item; stdcall;
 begin
   if FilePath = nil then begin
@@ -992,8 +1007,10 @@ exports
   GetButtonID,
   GetCampaignFileName,
   GetCampaignMapInd,
+  GetCodePage,
   GetEraRegistryIntValue,
   GetEraRegistryStrValue,
+  GetLanguage,
   GetMapFileName,
   GetProcessGuid,
   GetRetXVars,
@@ -1012,6 +1029,7 @@ exports
   IsPatchOverwritten,
   LoadImageAsPcx16,
   LogMemoryState,
+  SetCodePage,
   MemFree,
   Memory.ClientMemAlloc name '_ClientMemAlloc',
   Memory.ClientMemFree name '_ClientMemFree',
