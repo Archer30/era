@@ -18,6 +18,7 @@ uses
   Crypto,
   DataLib,
   DlgMes,
+  EraSettings,
   EventMan,
   GameExt,
   Graph,
@@ -180,6 +181,8 @@ var
     CurrHorizAlign: integer = DEF_ALIGNMENT;
 
     GlobalBuffer: array [0..1024 * 1024 - 1] of char;
+
+    OldClosingBracketOpt: boolean = false;
 
 
 procedure NameStdColors;
@@ -759,6 +762,11 @@ begin
         BeginNewColorBlock;
 
         if NativeTag = '}' then begin
+          // Support for old buggy mode, where single closing '}' used to close all opened tags at once
+          if OldClosingBracketOpt then begin
+            TextAttrsStack.Clear;
+          end;
+
           PopTextAttrsTuple;
         end else begin
           CurrColor := HEROES_GOLD_COLOR_CODE;
@@ -1571,6 +1579,11 @@ begin
   end; // .else
 end; // .function New_Pcx16_FillRect
 
+procedure OnLoadEraSettings (Event: GameExt.PEvent); stdcall;
+begin
+  OldClosingBracketOpt := EraSettings.GetOpt('Text.OldClosingBracketOpt').Bool(false);
+end;
+
 procedure OnAfterCreateWindow (Event: GameExt.PEvent); stdcall;
 begin
   NameStdColors;
@@ -1616,6 +1629,7 @@ begin
   TextScanner       := TextScan.TTextScanner.Create;
   TaggedLineBuilder := StrLib.TStrBuilder.Create;
 
-  EventMan.GetInstance.On('OnAfterWoG',          OnAfterWoG);
+  EventMan.GetInstance.On('$OnLoadEraSettings',  OnLoadEraSettings);
   EventMan.GetInstance.On('OnAfterCreateWindow', OnAfterCreateWindow);
+  EventMan.GetInstance.On('OnAfterWoG',          OnAfterWoG);
 end.
