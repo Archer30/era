@@ -97,7 +97,7 @@ function RandomRangeWithFreeParam (MinValue, MaxValue, FreeParam: integer): inte
 procedure ProcessUnhandledException (ExceptionRecord: Windows.PExceptionRecord; Context: Windows.PContext);
 
 (* Writes memory consumption info to main log file *)
-procedure LogMemoryState;
+procedure LogMemoryState; stdcall;
 
 
 (***) implementation (***)
@@ -988,7 +988,7 @@ begin
 
     // If we are network defender, the attacker already sent CombatId to us. Otherwise we should generate it and send later
     if not Heroes.GetPlayer(DefenderPlayerId).IsThisPcHumanPlayer then begin
-      CombatId := Erm.UniqueRng.Random;
+      CombatId := FastRand.Rng.Random;
     end;
   end else begin
     CombatId := DEFAULT_COMBAT_ID;
@@ -2275,7 +2275,7 @@ begin
   {!} Debug.ModuleContext.Unlock;
 end;
 
-procedure LogMemoryState;
+procedure LogMemoryState; stdcall;
 var
 {U} MemoryConsumers:          DataLib.TStrList {of Ptr(AllocatedSize: integer)};
     MemoryInfo:               PsApi.PROCESS_MEMORY_COUNTERS;
@@ -2871,8 +2871,8 @@ begin
   ExceptionsCritSection.Init;
   System.GetMem(OutOfMemoryReserve, OUT_OF_MEMORY_RESERVE_BYTES);
   OutOfMemoryVirtualReserve := Windows.VirtualAlloc(nil, OUT_OF_MEMORY_VIRTUAL_RESERVE_BYTES, Windows.MEM_RESERVE, Windows.PAGE_READWRITE);
-  CLangRng               := FastRand.TClangRng.Create(FastRand.GenerateSecureSeed);
-  QualitativeRng         := FastRand.TXoroshiro128Rng.Create(FastRand.GenerateSecureSeed);
+  CLangRng               := FastRand.TClangRng.Create(FastRand.MakeSecureSeedWithFallback);
+  QualitativeRng         := FastRand.TXoroshiro128Rng.Create(FastRand.MakeSecureSeedWithFallback);
   BattleDeterministicRng := TBattleDeterministicRng.Create(@CombatId, @CombatRound, @CombatActionId, @CombatRngFreeParam);
   GlobalRng              := QualitativeRng;
   Mp3TriggerHandledEvent := Windows.CreateEvent(nil, false, false, nil);

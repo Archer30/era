@@ -38,6 +38,7 @@ uses
   Lodman,
   Memory,
   Network,
+  ProcessApi,
   Rainbow,
   Stores,
   Trans,
@@ -730,27 +731,10 @@ begin
   result := Length(Str);
 end;
 
-var
-  (* Global unique process GUID, generated on demand *)
-  ProcessGuid: string;
-
 (* Returns 32-character unique key for current game process. The ID will be unique between multiple game runs. *)
 function GetProcessGuid: pchar; stdcall;
-var
-  ProcessGuidBuf: array [0..sizeof(GameExt.ProcessStartTime) - 1] of byte;
-
 begin
-  if ProcessGuid = '' then begin
-    FillChar(ProcessGuidBuf, sizeof(ProcessGuidBuf), #0);
-
-    if not WinUtils.RtlGenRandom(@ProcessGuidBuf, sizeof(ProcessGuidBuf)) then begin
-      Utils.CopyMem(sizeof(GameExt.ProcessStartTime), @GameExt.ProcessStartTime, @ProcessGuidBuf);
-    end;
-
-    ProcessGuid := StrLib.BinToHex(sizeof(ProcessGuidBuf), @ProcessGuidBuf);
-  end;
-
-  result := pchar(ProcessGuid);
+  result := pchar(ProcessApi.GetCurrentProcessGuid());
 end;
 
 function IsCampaign: TInt32Bool; stdcall;

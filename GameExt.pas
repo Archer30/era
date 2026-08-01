@@ -531,6 +531,7 @@ begin
 
   EventMan.GetInstance.Fire('OnAfterVfsInit', NO_EVENT_DATA, 0);
 
+  EventMan.GetInstance.Fire('$OnBeforeLoadEraPlugins', NO_EVENT_DATA, 0);
   LoadPlugins('era');
   EventMan.GetInstance.Fire('$OnAfterLoadEraPlugins', NO_EVENT_DATA, 0);
   EventMan.GetInstance.Fire('OnBeforeWoG', NO_EVENT_DATA, 0);

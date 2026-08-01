@@ -15,10 +15,11 @@ uses
   DlgMes,
   EventMan,
   Files,
-  GameExt,
   KubaZip,
   StrLib,
-  Utils;
+  Utils,
+
+  GameExt;
 
 const
   ZIP_PATH_PREFIX           = 'zip:\';
