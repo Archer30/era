@@ -497,6 +497,9 @@ begin
   System.IsMultiThread := true;
 
   ModsDir := GameDir + '\' + MODS_DIR;
+
+  EventMan.GetInstance.Fire('$OnBeforeInit');
+
   Files.ForcePath(GameDir + '\' + DEBUG_DIR);
   Files.ForcePath(GameDir + '\' + RUNTIME_DIR);
   Files.ForcePath(GameDir + '\' + RANDOM_MAPS_DIR);
@@ -507,7 +510,7 @@ begin
   Log.Write('Core', 'CheckVersion', 'Result: ' + ERA_VERSION_STR);
 
   // Allow other units to load necessary settings
-  EventMan.GetInstance.Fire('$OnLoadEraSettings', NO_EVENT_DATA, 0);
+  EventMan.GetInstance.Fire('$OnLoadEraSettings');
 
   // Run VFS
   ModListFilePath := CmdApp.GetArg(CMDLINE_ARG_MODLIST);
@@ -529,18 +532,18 @@ begin
   VfsImport.RunVfs(VfsImport.SORT_FIFO);
   VfsImport.RunWatcherA(pchar(GameDir + '\Mods'), 250);
 
-  EventMan.GetInstance.Fire('OnAfterVfsInit', NO_EVENT_DATA, 0);
+  EventMan.GetInstance.Fire('OnAfterVfsInit');
 
-  EventMan.GetInstance.Fire('$OnBeforeLoadEraPlugins', NO_EVENT_DATA, 0);
+  EventMan.GetInstance.Fire('$OnBeforeLoadEraPlugins');
   LoadPlugins('era');
-  EventMan.GetInstance.Fire('$OnAfterLoadEraPlugins', NO_EVENT_DATA, 0);
-  EventMan.GetInstance.Fire('OnBeforeWoG', NO_EVENT_DATA, 0);
+  EventMan.GetInstance.Fire('$OnAfterLoadEraPlugins');
+  EventMan.GetInstance.Fire('OnBeforeWoG');
   BinPatching.ApplyPatches(GameDir + '\' + PATCHES_PATH + '\BeforeWoG');
 
   InitWoG;
 
   LoadPlugins('dll');
-  EventMan.GetInstance.Fire('OnAfterWoG', NO_EVENT_DATA, 0);
+  EventMan.GetInstance.Fire('OnAfterWoG');
   BinPatching.ApplyPatches(GameDir + '\' + PATCHES_PATH + '\AfterWoG');
 
   EventMan.GetInstance.On('OnGenerateDebugInfo', OnGenerateDebugInfo);

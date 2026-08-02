@@ -882,6 +882,11 @@ begin
   result := ord(Log.Write(EventSource, Operation, Description));
 end;
 
+function RestartCurrentProcess: TInt32Bool; stdcall;
+begin
+  result := ord(ProcessApi.RestartCurrentProcess);
+end;
+
 function CreatePlugin (Name: pchar) : {On} TPlugin; stdcall;
 var
   PluginName: string;
@@ -1033,6 +1038,7 @@ exports
   RegisterHandler,
   RegisterMemoryConsumer,
   ReportPluginVersion,
+  RestartCurrentProcess,
   RollbackAppliedPatch,
   SaveIni,
   SetAssocVarIntValue,
