@@ -32,8 +32,8 @@ function RestartCurrentProcess: bool;
 
 
 const
-  RESTART_EVENT_ARG_NAME = 'restart-event';
-  PARENT_PID_ARG_NAME    = 'parent-pid';
+  RESTART_EVENT_ARG_NAME = '--restart-event';
+  PARENT_PID_ARG_NAME    = '--parent-pid';
 
 
 var
@@ -89,53 +89,61 @@ var
 begin
   CmdArgs := DataLib.NewStrList(not Utils.OWNS_ITEMS, DataLib.CASE_SENSITIVE);
   // * * * * * //
-  EventName := 'EraRestart.Event.' + SysUtils.IntToStr(WinUtils.GetUnixTime) + '.' + SysUtils.IntToStr(FastRand.Rng.Random);
-  hEvent    := Windows.CreateEvent(nil, MANUAL_RESET, INITIAL_EVENT_STATE, pchar(EventName));
-  result    := false;
+  with StaticCritSection do begin
+    Enter;
 
-  try
-    if not WinUtils.IsValidHandle(hEvent) then begin
-      exit;
-    end;
-
-    // Exclude existing restart related arguments
-    for i := 1 to ParamCount do begin
-      Arg := ParamStr(1);
-
-      if
-        not (StrLib.FindSubstr(RESTART_EVENT_ARG_PREFIX, Arg, MatchPos) and (MatchPos = 1)) and
-        not (StrLib.FindSubstr(PARENT_PID_ARG_PREFIX, Arg, MatchPos)    and (MatchPos = 1))
-      then begin
-        CmdArgs.Add('"' + Arg + '"');
-      end;
-    end;
-
-    // Add restart related arguments
-    CmdArgs.Add('"' + RESTART_EVENT_ARG_PREFIX + EventName + '"');
-    CmdArgs.Add('"' + PARENT_PID_ARG_PREFIX + SysUtils.IntToStr(Windows.GetCurrentProcessId) + '"');
-
-    if not CmdApp.RunProcess(WinUtils.GetExePath, CmdArgs.ToText(' '), SysUtils.GetCurrentDir, not WAIT_END) then begin
-      exit;
-    end;
-
-    if Windows.WaitForSingleObject(hEvent, RESTART_WAIT_TIME_MSEC) <> Windows.WAIT_OBJECT_0 then begin
-      exit;
-    end;
+    hEvent := 0;
+    result := false;
 
     try
-      Windows.ExitProcess(EXIT_CODE_OK);
-    except
-      Windows.TerminateProcess(Windows.GetCurrentProcess, EXIT_CODE_OK);
-    end;
+      EventName := 'EraRestart.Event.' + SysUtils.IntToStr(WinUtils.GetUnixTime) + '.' + SysUtils.IntToStr(FastRand.Rng.Random);
+      hEvent    := Windows.CreateEvent(nil, MANUAL_RESET, INITIAL_EVENT_STATE, pchar(EventName));
 
-    halt;
-  finally
-    if WinUtils.IsValidHandle(hEvent) then begin
-      Windows.CloseHandle(hEvent);
-    end;
+      if not WinUtils.IsValidHandle(hEvent) then begin
+        exit;
+      end;
 
-    SysUtils.FreeAndNil(CmdArgs);
-  end;
+      // Exclude existing restart related arguments
+      for i := 1 to ParamCount do begin
+        Arg := ParamStr(1);
+
+        if
+          not (StrLib.FindSubstr(RESTART_EVENT_ARG_PREFIX, Arg, MatchPos) and (MatchPos = 1)) and
+          not (StrLib.FindSubstr(PARENT_PID_ARG_PREFIX, Arg, MatchPos)    and (MatchPos = 1))
+        then begin
+          CmdArgs.Add('"' + Arg + '"');
+        end;
+      end;
+
+      // Add restart related arguments
+      CmdArgs.Add('"' + RESTART_EVENT_ARG_PREFIX + EventName + '"');
+      CmdArgs.Add('"' + PARENT_PID_ARG_PREFIX + SysUtils.IntToStr(Windows.GetCurrentProcessId) + '"');
+
+      if not CmdApp.RunProcess(WinUtils.GetExePath, CmdArgs.ToText(' '), SysUtils.GetCurrentDir, not WAIT_END) then begin
+        exit;
+      end;
+
+      if Windows.WaitForSingleObject(hEvent, RESTART_WAIT_TIME_MSEC) <> Windows.WAIT_OBJECT_0 then begin
+        exit;
+      end;
+
+      try
+        Windows.ExitProcess(EXIT_CODE_OK);
+      except
+        Windows.TerminateProcess(Windows.GetCurrentProcess, EXIT_CODE_OK);
+      end;
+
+      halt;
+    finally
+      if WinUtils.IsValidHandle(hEvent) then begin
+        Windows.CloseHandle(hEvent);
+      end;
+
+      SysUtils.FreeAndNil(CmdArgs);
+
+      Leave;
+    end;
+  end; // .with
 end; // .function RestartCurrentProcess
 
 procedure OnBeforeInit (Event: GameExt.PEvent); stdcall;
