@@ -922,6 +922,8 @@ var
 
 function Hook_BattleRegeneratePhase (Context: ApiJack.PHookContext): longbool; stdcall;
 const
+  FIELD_OFFSET_HAD_REGEN_PHASE = $4F0;
+
   COMBAT_MON_RECORD_SIZE = 1352;
 
   PARAM_STACK_IND      = 1;
@@ -932,10 +934,15 @@ var
   StackInd: integer;
 
 begin
-  StackInd     := Heroes.GetVal(Ptr(Context.ECX), STACK_SIDE).v * Heroes.NUM_BATTLE_STACKS_PER_SIDE + Heroes.GetVal(Ptr(Context.ECX), STACK_IND).v;
-  Erm.FireErmEventEx(Erm.TRIGGER_REGENERATE_PHASE, [StackInd, Context.ECX, 0]);
-  DisableRegen := Erm.RetXVars[PARAM_DISABLE_REGEN] <> 0;
-  result       := true;
+  DisableRegen := false;
+
+  if (not pbool(Context.ECX + FIELD_OFFSET_HAD_REGEN_PHASE)^) then begin
+    StackInd     := Heroes.GetVal(Ptr(Context.ECX), STACK_SIDE).v * Heroes.NUM_BATTLE_STACKS_PER_SIDE + Heroes.GetVal(Ptr(Context.ECX), STACK_IND).v;
+    Erm.FireErmEventEx(Erm.TRIGGER_REGENERATE_PHASE, [StackInd, Context.ECX, 0]);
+    DisableRegen := Erm.RetXVars[PARAM_DISABLE_REGEN] <> 0;
+  end;
+
+  result := true;
 end;
 
 procedure SetRegenerationAbility (MonId: integer; Chance: integer; HitPoints: integer; HpPercents: integer); stdcall;
@@ -990,7 +997,7 @@ end;
 
 function Hook_BattleDoRegenerate (Context: ApiJack.PHookContext): longbool; stdcall;
 const
-  EXIT_ADDR              = $446E21;
+  EXIT_ADDR              = $446DF1;
   PROCESS_ANIMATION_ADDR = $446C3F;
 
 var

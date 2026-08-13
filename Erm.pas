@@ -822,7 +822,6 @@ const
 
 
 var
-{O} UniqueRng:      FastRand.TXoroshiro128Rng;
 {O} LoadedErsFiles: {O} TList {of Heroes.TTextTable};
 {O} ErtStrings:     {O} AssocArrays.TObjArray {of Index => pchar}; // use H3 Alloc/Free
 {O} ScriptMan:      TScriptMan;
@@ -8247,12 +8246,12 @@ begin
 
     'T': begin
       if NumParams >= 3 then begin
-        result := ord(SetErmParamValue(VarParam, UniqueRng.RandomRange(SubCmd.Nums[1], SubCmd.Nums[2])));
+        result := ord(SetErmParamValue(VarParam, FastRand.Rng.RandomRange(SubCmd.Nums[1], SubCmd.Nums[2])));
       end else if NumParams >= 2 then begin
         ShowErmError('"!!VR:T" - it''s forbidden to seed the unique generator');
         result := 0; exit;
       end else begin
-        result := ord(SetErmParamValue(VarParam, GetErmParamValue(VarParam, ValType) + UniqueRng.RandomRange(0, SubCmd.Nums[0])));
+        result := ord(SetErmParamValue(VarParam, GetErmParamValue(VarParam, ValType) + FastRand.Rng.RandomRange(0, SubCmd.Nums[0])));
       end;
     end;
   else
@@ -9640,7 +9639,6 @@ begin
 end; // .procedure OnAfterStructRelocations
 
 begin
-  UniqueRng       := FastRand.TXoroshiro128Rng.Create(FastRand.GenerateSecureSeed);
   LoadedErsFiles  := DataLib.NewList(Utils.OWNS_ITEMS);
   ErtStrings      := AssocArrays.NewObjArr(not Utils.OWNS_ITEMS, not Utils.ITEMS_ARE_OBJECTS, Utils.NO_TYPEGUARD, not Utils.ALLOW_NIL);
   ScriptMan       := TScriptMan.Create;

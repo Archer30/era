@@ -345,7 +345,7 @@ begin
   SetCodePage(EraSettings.GetOpt('CodePage').Int(SystemCodePage));
 end;
 
-procedure OnAfterWoG (Event: GameExt.PEvent); stdcall;
+procedure OnBeforeLoadEraPlugins (Event: GameExt.PEvent); stdcall;
 begin
   LoadGlobalLangFiles;
 end;
@@ -414,7 +414,7 @@ begin
   LangDict         := DataLib.NewDict(Utils.OWNS_ITEMS, DataLib.CASE_SENSITIVE);
   MapLangResources := RscLists.TResourceList.Create;
   EventMan.GetInstance.On('$OnLoadEraSettings', OnLoadEraSettings);
-  EventMan.GetInstance.On('OnAfterWoG', OnAfterWoG);
+  EventMan.GetInstance.On('$OnBeforeLoadEraPlugins', OnBeforeLoadEraPlugins);
   EventMan.GetInstance.On('OnBeforeScriptsReload', OnBeforeScriptsReload);
   EventMan.GetInstance.On('OnGenerateDebugInfo', OnGenerateDebugInfo);
   EventMan.GetInstance.On('$OnEraMapStart', OnEraMapStart);
